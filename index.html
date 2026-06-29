@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hydra Visuals</title>
+    <title>42_Scr33ns4v3r</title>
     <script src="https://unpkg.com/hydra-synth"></script>
     <style>
         body, html {
@@ -28,7 +28,7 @@
             const canvas = document.getElementById("hydra-canvas");
 
             // Set actual pixel resolution, scaled for high-DPI screens
-            const dpr = window.devicePixelRatio || 1;
+            const dpr = window.devicePixelRatio || 2;
             canvas.width = window.innerWidth * dpr;
             canvas.height = window.innerHeight * dpr;
 
@@ -55,7 +55,7 @@
                   .scale(1, window.innerHeight / window.innerWidth)
                   .modulate(noise(.01))
                   .diff(noise(.4), .5)
-                  .luma(.52, .2)
+                  .luma(.5, .2)
                   .add(dots(o0), .5)
                   .modulate(osc(.2, 0.91, 0.5))
                   .add(src(o0), 0.25)
@@ -68,7 +68,7 @@
 
             // Keep resolution correct if the window is resized
             window.addEventListener('resize', () => {
-                const dpr = window.devicePixelRatio || 1;
+                const dpr = window.devicePixelRatio || 2;
                 canvas.width = window.innerWidth * dpr;
                 canvas.height = window.innerHeight * dpr;
                 hydra.setResolution(canvas.width, canvas.height);
