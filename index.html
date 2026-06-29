@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hydra Visuals</title>
-    <!-- Include the Hydra Synth Library -->
     <script src="https://unpkg.com/hydra-synth"></script>
     <style>
         body, html {
@@ -26,11 +25,19 @@
     <canvas id="hydra-canvas"></canvas>
     <script>
         window.addEventListener('load', () => {
-            // Initialize Hydra on the canvas element
+            const canvas = document.getElementById("hydra-canvas");
+
+            // Set actual pixel resolution, scaled for high-DPI screens
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+
             const hydra = new Hydra({
-                canvas: document.getElementById("hydra-canvas"),
+                canvas: canvas,
                 detectAudio: false,
-                makeGlobal: true  // exposes osc(), shape(), src(), o0, etc. as globals
+                makeGlobal: true,
+                width: canvas.width,
+                height: canvas.height
             });
 
             function runVisuals() {
@@ -58,6 +65,14 @@
             }
 
             runVisuals();
+
+            // Keep resolution correct if the window is resized
+            window.addEventListener('resize', () => {
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = window.innerWidth * dpr;
+                canvas.height = window.innerHeight * dpr;
+                hydra.setResolution(canvas.width, canvas.height);
+            });
         });
     </script>
 </body>
