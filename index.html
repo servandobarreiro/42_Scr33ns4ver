@@ -22,7 +22,7 @@
             width: 100%;
             height: 100%;
         }
-        /* p5 canvas stays off-screen; Hydra reads its pixels as a texture */
+        /* Keep p5 canvas hidden safely while Hydra samples its pixels */
         #p5-container {
             position: fixed;
             top: -9999px;
@@ -49,25 +49,74 @@
                 height: canvas.height
             });
 
-            // --- p5 sketch in instance mode (no global clashes) ---
+            // --- Corrected p5 sketch setup in Instance Mode ---
             const sketch = (p) => {
-                p.setup = () => {
-                    p.createCanvas(512, 512);
+                let cCode = [];
+                let unicodeIcons = ['★', '⚙', '✦', '✦', '▲', '◆', '✖', '✚', '☯', '☣', '☢', '☭', '⚯', '♔', '♕'];
+                let textX = 20;
+                let textY = 30;
+                let charSize = 16;
+
+                p.preload = () => {
+                    // Make sure 'code.txt' is sitting in your root directory!
+                    cCode = p.loadStrings('code.txt');
                 };
+
+                p.setup = () => {
+                    // Match the actual dimensions Hydra expects for clean canvas sourcing
+                    let p5Canvas = p.createCanvas(window.innerWidth, window.innerHeight);
+                    p5Canvas.parent('p5-container');
+                    p.textFont('Courier New');
+                    p.textSize(charSize);
+                    
+                    // CRITICAL: Set a high frame rate or remove p.noLoop() 
+                    // Hydra requires active animation frames to update its texture
+                    p.frameRate(30); 
+                };
+
                 p.draw = () => {
-                    p.background(0);
-                    p.noFill();
-                    p.stroke(255);
-                    p.circle(
-                        256 + 150 * p.sin(p.frameCount * 0.02),
-                        256 + 150 * p.cos(p.frameCount * 0.03),
-                        80
-                    );
+                    p.background(15);
+                    
+                    let fullText = cCode.join('\n');
+                    let currentX = textX;
+                    let currentY = textY;
+                    
+                    for (let i = 0; i < fullText.length; i++) {
+                        let currentChar = fullText.charAt(i);
+                        
+                        if (currentChar === '\n') {
+                            currentY += charSize * 1.5;
+                            currentX = textX;
+                            continue;
+                        }
+                        
+                        let frequency = 0.05;
+                        // Use p.sin instead of sin
+                        let r = p.sin(frequency * i + 0) * 127 + 128;
+                        let g = p.sin(frequency * i + 2) * 127 + 128;
+                        let b = p.sin(frequency * i + 4) * 127 + 128;
+                        p.fill(r, g, b);
+                        
+                        let displayChar = currentChar;
+                        if (currentChar !== ' ' && currentChar !== '\t' && p.random(100) < 8) {
+                            displayChar = p.random(unicodeIcons);
+                        }
+                        
+                        p.text(displayChar, currentX, currentY);
+                        currentX += p.textWidth(currentChar);
+                        
+                        if (currentX > p.width - textX) {
+                            currentY += charSize * 1.5;
+                            currentX = textX;
+                        }
+                    }
                 };
             };
-            const p5Instance = new p5(sketch, document.getElementById('p5-container'));
 
-            // Give Hydra a moment to mount, then point a source at the p5 canvas
+            // Instantiate and tie to variable that Hydra calls below
+            const p5Instance = new p5(sketch);
+
+            // Give Hydra a brief moment to map and scale the texture
             setTimeout(() => {
                 s0.init({ src: p5Instance.canvas });
 
@@ -90,8 +139,8 @@
                       .add(dots(o0), .5)
                       .modulate(osc(.2, 0.91, 0.5))
                       .add(src(o0), 0.25)
-                      .modulate(s0, 0.3)      // <-- p5 sketch modulating the patch
-                      .add(s0, 0.2)           // <-- p5 sketch blended in directly
+                      .modulate(s0, 0.3)      // <-- p5 text glitched map driving Hydra distortion
+                      .add(s0, 0.2)           // <-- p5 text layering color data cleanly
                       .luma(.5, .015)
                       .invert()
                       .out(o0);
