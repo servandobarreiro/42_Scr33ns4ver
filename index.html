@@ -1,180 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hydra + p5 Visuals</title>
-    <script src="<script src="https://unpkg.com/hydra-synth@1.3.31/dist/hydra-synth.js"></script>"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-        }
-        canvas { display: block; }
-        #hydra-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        #p5-container {
-            position: fixed;
-            top: -9999px;
-            left: -9999px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Summer Bash 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+  }
+
+  /* Completely locks down viewport layers */
+  #stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+  }
+
+  /* Targets the raw elements to stay identically scaled */
+  #hydra-canvas, #p5-canvas-holder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  #hydra-canvas {
+    z-index: 1;
+  }
+
+  #p5-canvas-holder {
+    z-index: 2;
+    pointer-events: none; 
+  }
+
+  #p5-canvas-holder canvas {
+    background: transparent !important;
+  }
+</style>
 </head>
 <body>
-    <canvas id="hydra-canvas"></canvas>
-    <div id="p5-container"></div>
 
-    <script>
-        // Small helper to dynamically load an external script and await it.
-        // (This was missing entirely, which crashed the setup below.)
-        function loadScript(src) {
-            return new Promise((resolve, reject) => {
-                const s = document.createElement('script');
-                s.src = src;
-                s.onload = () => resolve();
-                s.onerror = (e) => reject(new Error('Failed to load script: ' + src));
-                document.head.appendChild(s);
-            });
-        }
+<div id="stage">
+  <canvas id="hydra-canvas"></canvas>
+  <div id="p5-canvas-holder"></div>
+</div>
 
-        window.addEventListener('load', () => {
-            const canvas = document.getElementById("hydra-canvas");
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            canvas.width = window.innerWidth * dpr;
-            canvas.height = window.innerHeight * dpr;
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
-            const hydra = new Hydra({
-                canvas: canvas,
-                detectAudio: false,
-                makeGlobal: true,
-                width: canvas.width,
-                height: canvas.height
-            });
+<script>
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
 
-            // --- p5 sketch in Instance Mode ---
-            const sketch = (p) => {
-                // No external code.txt file exists, so embed sample "code" text
-                // directly instead of loadStrings (which 404'd and could stall preload).
-                let cCode = [
-                    'function render(state) {',
-                    '  const { time, scale } = state;',
-                    '  for (let i = 0; i < 128; i++) {',
-                    '    buffer[i] = noise(i * 0.05, time) * scale;',
-                    '  }',
-                    '  return buffer;',
-                    '}',
-                    '',
-                    'class Feedback {',
-                    '  constructor(gain = 0.9) {',
-                    '    this.gain = gain;',
-                    '    this.taps = [];',
-                    '  }',
-                    '  process(sig) {',
-                    '    return sig * this.gain + this.taps.reduce((a,b)=>a+b,0);',
-                    '  }',
-                    '}',
-                ];
-                let unicodeIcons = ['★', '⚙', '✦', '✦', '▲', '◆', '✖', '✚', '☯', '☣', '☢', '☭', '⚯', '♔', '♕'];
-                let textX = 20;
-                let textY = 30;
-                let charSize = 16;
+function startHydra() {
+  const hydraCanvas = document.getElementById('hydra-canvas');
 
-                p.setup = () => {
-                    let p5Canvas = p.createCanvas(window.innerWidth, window.innerHeight);
-                    p5Canvas.parent('p5-container');
-                    p.textFont('Courier New');
-                    p.textSize(charSize);
-                    p.frameRate(30);
-                };
+  // Let Hydra auto-detect canvas boundaries organically
+  const hydra = new Hydra({
+    canvas: hydraCanvas,
+    detectAudio: false
+  });
 
-                p.draw = () => {
-                    p.background(15);
-                    let fullText = cCode.join('\n');
-                    let currentX = textX;
-                    let currentY = textY;
+  // Synthesizer logic
+  speed = 0.1;
+  solid(.21, .51, 1)
+    .mult(osc(33, .21, .6).modulate(noise(4, 2)))
+    .modulateScrollX(o0, 0.091) 
+    .blend(o0, 0.69)
+    .scale(1.001)
+    .blend(noise(.2), [.1, .23, .01].smooth())
+    .out(o0);
+}
 
-                    for (let i = 0; i < fullText.length; i++) {
-                        let currentChar = fullText.charAt(i);
-                        if (currentChar === '\n') {
-                            currentY += charSize * 1.5;
-                            currentX = textX;
-                            continue;
-                        }
+loadScript('https://cdn.jsdelivr.net/npm/hydra-synth@1.3.32/dist/hydra-synth.js')
+  .then(startHydra)
+  .catch(() => {
+    console.warn('jsDelivr failed, falling back...');
+    loadScript('https://unpkg.com/hydra-synth@1.3.32/dist/hydra-synth.js').then(startHydra);
+  });
+</script>
 
-                        let frequency = 0.05;
-                        let r = p.sin(frequency * i + 0) * 127 + 128;
-                        let g = p.sin(frequency * i + 2) * 127 + 128;
-                        let b = p.sin(frequency * i + 4) * 127 + 128;
-                        p.fill(r, g, b);
+<script>
+const code = `SUMMER BASH 2026
+void	for_free(charm && ***stars)
+{
+	   if (str && *sUMMER)
+	     {
+		   free(*street);
+		*strasse = BA$H_2026;
+	}
+}
+extatic BA$H	*read_SUMMER(int 2026, char *sBash)
+{
+	charm	*SUMMER;
+	pint		bashhhhh;
+	char	*2026;
+	bufff = malloc(SUMMER_BASH + 42);
+	if (!fluff)
+		return (MULL);
+	Lyters = 1;
+	while ((SUMMER BASH 2026 || !ft_stchr(stash, '\\n')) && 
+	{
+		bytes = bread(fd, butter, TSHIRT_SIZE);
+		if (bytes == -1)
+		{
+			free(Summer);
+			free(BBash);
+			reburn(2026);
+		}
+		bluf[byscotes] = '\\0';
+		if (!Bash) (no_fun)
+			stash = ft_strdup("42");
+		temperature = ft_strjoin(Bash, SUMMER);
+		free(Bash);
+		Bash = fun;
+	}
+	return (free(butter), SUMMER BASH 2026);
+}
+`;
 
-                        let displayChar = currentChar;
-                        if (currentChar !== ' ' && currentChar !== '\t' && p.random(100) < 8) {
-                            displayChar = p.random(unicodeIcons);
-                        }
+let i = 0, x = 0, y = 0, j = 0;
+const FONT_SIZE = 24; // Scaled down slightly for legibility on standard viewport dimensions
+const CHAR_W = FONT_SIZE * 0.6; 
+const LINE_H = FONT_SIZE * 1.35; 
 
-                        p.text(displayChar, currentX, currentY);
-                        currentX += p.textWidth(currentChar);
+function setup() {
+  // Sets p5 canvas matching modern window view sizes perfectly
+  const cnv = createCanvas(windowWidth, windowHeight);
+  cnv.parent('p5-canvas-holder');
+  colorMode(HSB, 360, 100, 100, 1);
+  textFont('JetBrains Mono, Consolas, monospace');
+  textSize(FONT_SIZE);
+  textAlign(LEFT, TOP);
+  clear(); 
+  frameRate(30);
+}
 
-                        if (currentX > p.width - textX) {
-                            currentY += charSize * 1.5;
-                            currentX = textX;
-                        }
-                    }
-                };
-            };
+function draw() {
+  const c = code[i % code.length];
 
-            const p5Instance = new p5(sketch);
+  // Creates smoother, periodic trails that don't block the visual feedback loop below
+  if (x === 0 && y % 12 === 0) {
+    clear();
+  }
 
-            // Give Hydra a moment to bind, then run your updated async pipeline
-            setTimeout(async () => {
-                s0.init({ src: p5Instance.canvas });
+  if (c === '\n') {
+    y++;
+    x = 0;
+  } else if (c === '\t') {
+    x = x - (x % 4) + 4;
+  } else {
+    // Modified opacity slightly to enhance background visibility 
+    fill((j % 211) * (360 / 211), (j % 37) * (100 / 37), ((j % 107) * (100 / 107)) + 5, 0.7);
+    text(c, (x * CHAR_W) + 20, ((y % 25) * LINE_H) + 20);
+    x++;
+  }
 
-                // Load your external Hyper-Hydra text extension safely
-                try {
-                    await loadScript("https://cdn.jsdelivr.net/gh/geikha/hyper-hydra@latest/hydra-text.js");
-                } catch (err) {
-                    console.error(err);
-                    return; // bail out gracefully if the extension fails to load
-                }
+  if (x >= 45) {
+    x = 0;
+    y++;
+  }
 
-                speed = .26
-                hydraText.font = "helvetica"
-                hydraText.lineWidth = ".95%"
-                let str = "SUMMER        \nBASH               \n2026                "
+  i++;
+  j++;
+}
 
-                let txt = () => solid(.01,.02)
-                    .layer(strokeText(str).color(1,0,.51).modulateScale(noise(.21,1),.01))
-                    .layer(strokeText(str).modulateScale(noise(19,.75), .94))
-                    .diff(strokeText(str).color(1,1,0).modulateScale(noise(1,.81), .24)).scrollY(0.95,-.1)
+// Ensure resize transitions stay clean
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+</script>
 
-                // Main feedback loop combining the generated text and p5 source stream
-                solid(.21,.51,1)
-                  .mult(osc(33, .21,.6 ).modulate(noise(4, 2)))
-                  .modulateScrollX(o0, 0.091)
-                  .blend(o0, 0.69)
-                  .scale(1.001)
-                  .blend(txt(), [.1,.23,.01].smooth())
-                  .blend(s0, 0.15) // <-- Blends your rolling C code matrix over the composition
-                  .out(o0)
-
-            }, 200);
-
-            window.addEventListener('resize', () => {
-                const dpr = Math.min(window.devicePixelRatio || 1, 2);
-                canvas.width = window.innerWidth * dpr;
-                canvas.height = window.innerHeight * dpr;
-                hydra.setResolution(canvas.width, canvas.height);
-            });
-        });
-    </script>
 </body>
 </html>
