@@ -22,7 +22,6 @@
             width: 100%;
             height: 100%;
         }
-        /* Keep p5 canvas hidden safely while Hydra samples its pixels */
         #p5-container {
             position: fixed;
             top: -9999px;
@@ -49,7 +48,7 @@
                 height: canvas.height
             });
 
-            // --- Corrected p5 sketch setup in Instance Mode ---
+            // --- p5 sketch in Instance Mode ---
             const sketch = (p) => {
                 let cCode = [];
                 let unicodeIcons = ['★', '⚙', '✦', '✦', '▲', '◆', '✖', '✚', '☯', '☣', '☢', '☭', '⚯', '♔', '♕'];
@@ -58,32 +57,25 @@
                 let charSize = 16;
 
                 p.preload = () => {
-                    // Make sure 'code.txt' is sitting in your root directory!
                     cCode = p.loadStrings('code.txt');
                 };
 
                 p.setup = () => {
-                    // Match the actual dimensions Hydra expects for clean canvas sourcing
                     let p5Canvas = p.createCanvas(window.innerWidth, window.innerHeight);
                     p5Canvas.parent('p5-container');
                     p.textFont('Courier New');
                     p.textSize(charSize);
-                    
-                    // CRITICAL: Set a high frame rate or remove p.noLoop() 
-                    // Hydra requires active animation frames to update its texture
                     p.frameRate(30); 
                 };
 
                 p.draw = () => {
                     p.background(15);
-                    
                     let fullText = cCode.join('\n');
                     let currentX = textX;
                     let currentY = textY;
                     
                     for (let i = 0; i < fullText.length; i++) {
                         let currentChar = fullText.charAt(i);
-                        
                         if (currentChar === '\n') {
                             currentY += charSize * 1.5;
                             currentX = textX;
@@ -91,7 +83,6 @@
                         }
                         
                         let frequency = 0.05;
-                        // Use p.sin instead of sin
                         let r = p.sin(frequency * i + 0) * 127 + 128;
                         let g = p.sin(frequency * i + 2) * 127 + 128;
                         let b = p.sin(frequency * i + 4) * 127 + 128;
@@ -113,40 +104,35 @@
                 };
             };
 
-            // Instantiate and tie to variable that Hydra calls below
             const p5Instance = new p5(sketch);
 
-            // Give Hydra a brief moment to map and scale the texture
-            setTimeout(() => {
+            // Give Hydra a moment to bind, then run your updated async pipeline
+            setTimeout(async () => {
                 s0.init({ src: p5Instance.canvas });
 
-                function runVisuals() {
-                    let dots = () => osc(20, 0.08, 5.5)
-                      .rotate(0.05)
-                      .modulateScale(osc(10, 0.05, 0.5).rotate(1.5), 0.7)
-                      .color(0.8, 0.1, 0.5)
-                      .add(osc(32, -0.05, 3.8).color(0.41, 0.99, 0.6));
+                // Load your external Hyper-Hydra text extension safely
+                await loadScript("https://cdn.jsdelivr.net/gh/geikha/hyper-hydra@latest/hydra-text.js")
+                
+                speed = .26
+                hydraText.font = "helvetica"
+                hydraText.lineWidth = ".95%"
+                let str = "SUMMER        \nBASH               \n2026                "
+                
+                let txt = () => solid(.01,.02)
+                    .layer(strokeText(str).color(1,0,.51).modulateScale(noise(.21,1),.01))
+                    .layer(strokeText(str).modulateScale(noise(19,.75), .94))
+                    .diff(strokeText(str).color(1,1,0).modulateScale(noise(1,.81), .24)).scrollY(0.95,-.1)
 
-                    speed = 1;
+                // Main feedback loop combining the generated text and p5 source stream
+                solid(.21,.51,1)
+                  .mult(osc(33, .21,.6 ).modulate(noise(4, 2)))
+                  .modulateScrollX(o0, 0.091)
+                  .blend(o0, 0.69)
+                  .scale(1.001)
+                  .blend(txt(), [.1,.23,.01].smooth())
+                  .blend(s0, 0.15) // <-- Blends your rolling C code matrix over the composition
+                  .out(o0)
 
-                    shape(100, 0.73, .32)
-                      .diff(shape(100, 0.69, .07))
-                      .mult(osc(3, 0.5, 62))
-                      .scale(1, window.innerHeight / window.innerWidth)
-                      .modulate(noise(.01))
-                      .diff(noise(.4), .5)
-                      .luma(.52, .2)
-                      .add(dots(o0), .5)
-                      .modulate(osc(.2, 0.91, 0.5))
-                      .add(src(o0), 0.25)
-                      .modulate(s0, 0.3)      // <-- p5 text glitched map driving Hydra distortion
-                      .add(s0, 0.2)           // <-- p5 text layering color data cleanly
-                      .luma(.5, .015)
-                      .invert()
-                      .out(o0);
-                }
-
-                runVisuals();
             }, 200);
 
             window.addEventListener('resize', () => {
