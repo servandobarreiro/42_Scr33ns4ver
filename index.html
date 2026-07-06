@@ -34,6 +34,18 @@
     <div id="p5-container"></div>
 
     <script>
+        // Small helper to dynamically load an external script and await it.
+        // (This was missing entirely, which crashed the setup below.)
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = () => resolve();
+                s.onerror = (e) => reject(new Error('Failed to load script: ' + src));
+                document.head.appendChild(s);
+            });
+        }
+
         window.addEventListener('load', () => {
             const canvas = document.getElementById("hydra-canvas");
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -50,22 +62,38 @@
 
             // --- p5 sketch in Instance Mode ---
             const sketch = (p) => {
-                let cCode = [];
+                // No external code.txt file exists, so embed sample "code" text
+                // directly instead of loadStrings (which 404'd and could stall preload).
+                let cCode = [
+                    'function render(state) {',
+                    '  const { time, scale } = state;',
+                    '  for (let i = 0; i < 128; i++) {',
+                    '    buffer[i] = noise(i * 0.05, time) * scale;',
+                    '  }',
+                    '  return buffer;',
+                    '}',
+                    '',
+                    'class Feedback {',
+                    '  constructor(gain = 0.9) {',
+                    '    this.gain = gain;',
+                    '    this.taps = [];',
+                    '  }',
+                    '  process(sig) {',
+                    '    return sig * this.gain + this.taps.reduce((a,b)=>a+b,0);',
+                    '  }',
+                    '}',
+                ];
                 let unicodeIcons = ['★', '⚙', '✦', '✦', '▲', '◆', '✖', '✚', '☯', '☣', '☢', '☭', '⚯', '♔', '♕'];
                 let textX = 20;
                 let textY = 30;
                 let charSize = 16;
-
-                p.preload = () => {
-                    cCode = p.loadStrings('code.txt');
-                };
 
                 p.setup = () => {
                     let p5Canvas = p.createCanvas(window.innerWidth, window.innerHeight);
                     p5Canvas.parent('p5-container');
                     p.textFont('Courier New');
                     p.textSize(charSize);
-                    p.frameRate(30); 
+                    p.frameRate(30);
                 };
 
                 p.draw = () => {
@@ -73,7 +101,7 @@
                     let fullText = cCode.join('\n');
                     let currentX = textX;
                     let currentY = textY;
-                    
+
                     for (let i = 0; i < fullText.length; i++) {
                         let currentChar = fullText.charAt(i);
                         if (currentChar === '\n') {
@@ -81,21 +109,21 @@
                             currentX = textX;
                             continue;
                         }
-                        
+
                         let frequency = 0.05;
                         let r = p.sin(frequency * i + 0) * 127 + 128;
                         let g = p.sin(frequency * i + 2) * 127 + 128;
                         let b = p.sin(frequency * i + 4) * 127 + 128;
                         p.fill(r, g, b);
-                        
+
                         let displayChar = currentChar;
                         if (currentChar !== ' ' && currentChar !== '\t' && p.random(100) < 8) {
                             displayChar = p.random(unicodeIcons);
                         }
-                        
+
                         p.text(displayChar, currentX, currentY);
                         currentX += p.textWidth(currentChar);
-                        
+
                         if (currentX > p.width - textX) {
                             currentY += charSize * 1.5;
                             currentX = textX;
@@ -111,13 +139,18 @@
                 s0.init({ src: p5Instance.canvas });
 
                 // Load your external Hyper-Hydra text extension safely
-                await loadScript("https://cdn.jsdelivr.net/gh/geikha/hyper-hydra@latest/hydra-text.js")
-                
+                try {
+                    await loadScript("https://cdn.jsdelivr.net/gh/geikha/hyper-hydra@latest/hydra-text.js");
+                } catch (err) {
+                    console.error(err);
+                    return; // bail out gracefully if the extension fails to load
+                }
+
                 speed = .26
                 hydraText.font = "helvetica"
                 hydraText.lineWidth = ".95%"
                 let str = "SUMMER        \nBASH               \n2026                "
-                
+
                 let txt = () => solid(.01,.02)
                     .layer(strokeText(str).color(1,0,.51).modulateScale(noise(.21,1),.01))
                     .layer(strokeText(str).modulateScale(noise(19,.75), .94))
