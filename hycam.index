@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydra + p5 + Cam</title>
+    <script src="https://unpkg.com/hydra-synth"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas { display: block; }
+        #hydra-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #p5-container {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        /* Optional: permission prompt overlay */
+        #cam-prompt {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            font-family: sans-serif;
+            z-index: 10;
+            gap: 16px;
+        }
+        #cam-prompt button {
+            padding: 10px 28px;
+            font-size: 1rem;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #cam-prompt.hidden { display: none; }
+    </style>
+</head>
+<body>
+    <canvas id="hydra-canvas"></canvas>
+    <div id="p5-container"></div>
+
+    <!-- Ask user before requesting camera permission -->
+    <div id="cam-prompt">
+        <p>This sketch uses your webcam.</p>
+        <button id="start-btn">Enable Camera & Start</button>
+        <button id="skip-btn" style="background:#333;color:#fff">Skip Camera</button>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const canvas = document.getElementById("hydra-canvas");
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width  = window.innerWidth  * dpr;
+            canvas.height = window.innerHeight * dpr;
+
+            const hydra = new Hydra({
+                canvas,
+                detectAudio: false,
+                makeGlobal: true,
+                width:  canvas.width,
+                height: canvas.height
+            });
+
+            // --- p5 sketch in instance mode ---
+            const sketch = (p) => {
+                p.setup = () => p.createCanvas(512, 512);
+                p.draw  = () => {
+                    p.background(0);
+                    p.noFill();
+                    p.stroke(255);
+                    p.circle(
+                        256 + 150 * p.sin(p.frameCount * 0.02),
+                        256 + 150 * p.cos(p.frameCount * 0.03),
+                        80
+                    );
+                };
+            };
+            const p5Instance = new p5(sketch, document.getElementById('p5-container'));
+
+            function runVisuals(withCam) {
+                // s0 = p5 canvas texture
+                s0.init({ src: p5Instance.canvas });
+
+                // s1 = webcam (only if user agreed)
+                if (withCam) s1.initCam(0);
+
+                let dots = () => osc(20, 0.08, 5.5)
+                  .rotate(0.05)
+                  .modulateScale(osc(10, 0.05, 0.5).rotate(1.5), 0.7)
+                  .color(0.8, 0.1, 0.5)
+                  .add(osc(32, -0.05, 3.8).color(0.41, 0.99, 0.6));
+
+                speed = 1;
+
+                // Build the cam layer (or empty fallback)
+                const camLayer = withCam
+                  ? src(s1).saturate(0).contrast(1.4)   // greyscale, punchy cam feed
+                  : src(o0).color(0, 0, 0);              // transparent/empty if no cam
+
+                shape(100, 0.73, .32)
+                  .diff(shape(100, 0.69, .07))
+                  .mult(osc(3, 0.5, 62))
+                  .scale(1, window.innerHeight / window.innerWidth)
+                  .modulate(noise(.01))
+                  .diff(noise(.4), .5)
+                  .luma(.52, .2)
+                  .add(dots(o0), .5)
+                  .modulate(osc(.2, 0.91, 0.5))
+                  .add(src(o0), 0.25)
+                  .modulate(s0, 0.3)
+                  .add(s0, 0.2)
+                  .diff(camLayer, 0.4)       // cam diffed into the patch
+                  .modulate(camLayer, 0.15)  // cam also used as a modulator
+                  .luma(.5, .015)
+                  .invert()
+                  .out(o0);
+            }
+
+            const prompt = document.getElementById('cam-prompt');
+
+            document.getElementById('start-btn').addEventListener('click', () => {
+                prompt.classList.add('hidden');
+                setTimeout(() => runVisuals(true), 200);
+            });
+
+            document.getElementById('skip-btn').addEventListener('click', () => {
+                prompt.classList.add('hidden');
+                setTimeout(() => runVisuals(false), 200);
+            });
+
+            window.addEventListener('resize', () => {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                canvas.width  = window.innerWidth  * dpr;
+                canvas.height = window.innerHeight * dpr;
+                hydra.setResolution(canvas.width, canvas.height);
+            });
+        });
+    </script>
+</body>
+</html>
