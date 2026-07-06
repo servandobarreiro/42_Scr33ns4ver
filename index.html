@@ -37,12 +37,12 @@ const hydra = new Hydra({
   height: window.innerHeight
 });
 
-solid(.21,.51,1)
-  .mult(osc(26, .21,.6 ).modulate(noise(3, 2)))
-  .modulateScrollX(o0, 0.091) // Self-feedback mechanism
-  .blend(o0, 0.69)
+solid(.1,.51,1)
+  .mult(osc(9, .21,.6 ).modulate(noise(2, 1.2, 6)))
+  .modulateScrollX(o0, 0.1) // Self-feedback mechanism
+  .blend(o0, 0.49)
   .scale(1.001)
-  .blend(noise(.2),[.1,.23,.01].smooth())
+  .blend(noise(.82),[.1,.23,.01].smooth())
   .out(o0)
 
 // ---------- p5 code-editor typing layer ----------
