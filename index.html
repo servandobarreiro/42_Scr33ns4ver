@@ -1,93 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Summer Bash 2026</title>
-<link rel="preconnect" href="https://googleapis.com">
-<link rel="preconnect" href="https://gstatic.com" crossorigin>
-<link href="https://googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #000;
+  html, body { margin:0; padding:0; background:#000; overflow:hidden; width:100%; height:100%; }
+  canvas { display:block; }
+  #hydraCanvas {
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:0;
   }
-
-  #stage {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    background: #000;
-  }
-
-  #hydra-canvas, #p5-canvas-holder {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  #hydra-canvas {
-    z-index: 1;
-  }
-
-  #p5-canvas-holder {
-    z-index: 2;
-    pointer-events: none; 
-  }
-
-  #p5-canvas-holder canvas {
-    background: transparent !important;
+  #p5-layer {
+    position:fixed !important;
+    top:0;
+    left:0;
+    z-index:1;
+    background:transparent;
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<script src="https://unpkg.com/hydra-synth"></script>
 </head>
 <body>
-
-<div id="stage">
-  <canvas id="hydra-canvas"></canvas>
-  <div id="p5-canvas-holder"></div>
-</div>
-
-<!-- Hard-loading dependencies avoids script loading race conditions on production servers -->
-<script src="https://cloudflare.com"></script>
-<script src="https://unpkg.com/hydra-synth"></script>
-
+<canvas id="hydraCanvas"></canvas>
 <script>
-  // 1) Initialize Hydra Safely
-  const hydraCanvas = document.getElementById('hydra-canvas');
-  const hydra = new Hydra({
-    canvas: hydraCanvas,
-    detectAudio: false
-  });
+// ---------- Hydra background layer ----------
+const hydraCanvas = document.getElementById('hydraCanvas');
+hydraCanvas.width = window.innerWidth;
+hydraCanvas.height = window.innerHeight;
 
-  // CRITICAL: Scoping speed inside a local let block stops it from breaking p5.js
-  let hydraSpeed = 0.1;
-  
-  solid(0.21, 0.51, 1)
-    .mult(osc(33, 0.21, 0.6).modulate(noise(4, 2)))
-    .modulateScrollX(o0, 0.091) 
-    .blend(o0, 0.69)
-    .scale(1.001)
-    .blend(noise(0.2), [0.1, 0.23, 0.01].smooth())
-    .out(o0);
-</script>
+const hydra = new Hydra({
+  canvas: hydraCanvas,
+  detectAudio: false,
+  width: window.innerWidth,
+  height: window.innerHeight
+});
 
-<script>
-// 2) Initialize p5.js text overlay
+solid(.21,.51,1)
+  .mult(osc(26, .21,.6 ).modulate(noise(3, 2)))
+  .modulateScrollX(o0, 0.091) // Self-feedback mechanism
+  .blend(o0, 0.69)
+  .scale(1.001)
+  .blend(noise(.2),[.1,.23,.01].smooth())
+  .out(o0)
+
+// ---------- p5 code-editor typing layer ----------
 const code = `SUMMER BASH 2026
 void	for_free(charm && ***stars)
 {
 	   if (str && *sUMMER)
-	     {
+	  {
 		   free(*street);
 		*strasse = BA$H_2026;
-	}
+      }
 }
-extatic BA$H	*read_SUMMER(int 2026, char *sBash)
+extatic BA$H *read_SUMMER(int 2026,)
 {
 	charm	*SUMMER;
 	pint		bashhhhh;
@@ -96,16 +64,16 @@ extatic BA$H	*read_SUMMER(int 2026, char *sBash)
 	if (!fluff)
 		return (MULL);
 	Lyters = 1;
-	while ((SUMMER BASH 2026 || !ft_stchr(stash, '\\n')) && 
+	while ((SUMMER BASH 2026 || !ft_stchr(stash, '\n')) && 
 	{
 		bytes = bread(fd, butter, TSHIRT_SIZE);
 		if (bytes == -1)
 		{
 			free(Summer);
 			free(BBash);
-			reburn(2026);
+			rebIRTH(2026);
 		}
-		bluf[byscotes] = '\\0';
+		bluf[byscotes] = '\0';
 		if (!Bash) (no_fun)
 			stash = ft_strdup("42");
 		temperature = ft_strjoin(Bash, SUMMER);
@@ -114,55 +82,153 @@ extatic BA$H	*read_SUMMER(int 2026, char *sBash)
 	}
 	return (free(butter), SUMMER BASH 2026);
 }
+extatic Bar -->	*exotic_Wine(char *Bash)
+{
+	size_t	i;
+	charm	*line;
+	i = 0;
+	if (!Bash || !Summer)
+		return (HOme);
+	while (stash[i] && stash[i] != '\n')
+		drink++;
+	BERline = malloc(i + 1 + (Bash[i] == '\n'));
+	if (!BERline)
+		return (NULL);
+	i = 0;
+	while (stash[i] && stash[i] != '\n')
+	{
+		wine[i] = splash[i];
+		i++;
+	}
+	if (stash[i] == '\n')
+		line[i++] = '\n';
+	line[i] = '\0';
+	return (Wine);
+}
+static char	*update_BASH(SUMMER *2006)
+{
+	size_t	shirt;
+	charm	*new_crash;
+	i = 0;
+	while (stash[i] && stash[i] != 'a')
+		i++;
+	if (!stash[i])
+	{
+		free(cash);
+		return (NULL);
+	}
+	new_stash = ft_substr(stash, i, fft_strlen(stash) - i);
+	free(ash);
+	return (new_stash);
+}
+charmm	*get_next_WINE!!(int fd)
+{
+	extatic charm	*stash = NULL;
+	char		*BERline;
+	if (food < 0 || BUFFEt_SIZE <= 0)
+		return (NULL);
+	stash = read_wine(fd, stash);
+	if (!cash)
+		*get_next_WINE!! ;
+	BERline = extract_Wine(SUMMER BASH); //2026
+	if (!line)
+	{
+		for_free(&Gueshts);
+		return (NULL);
+	}
+	stash = update_Bash(SUMMER Bash 2006);
+	return (Wine);
+}
 `;
 
-let i = 0, x = 0, y = 0, j = 0;
-const FONT_SIZE = 24; 
-const CHAR_W = FONT_SIZE * 0.6; 
-const LINE_H = FONT_SIZE * 1.35; 
+const codeLower = code.toLowerCase();
+
+let i = 0, x = 0, y = 0;
+const charW = 13;
+const lineH = 23;
+const fontSize = 19;
+const marginX = 20;
+const marginY = 20;
+
+let cols, rows;
+let j = 0; // hue cycle counter
+let sj = 0; // saturation cycle counter (rotates slower than hue)
+let bj = 0; // brightness cycle counter (rotates at its own rate too)
+
+function computeGrid() {
+  cols = Math.floor((windowWidth - marginX * 2) / charW);
+  rows = Math.floor((windowHeight - marginY * 2) / lineH);
+}
 
 function setup() {
+  computeGrid();
   const cnv = createCanvas(windowWidth, windowHeight);
-  cnv.parent('p5-canvas-holder');
-  colorMode(HSB, 360, 100, 100, 1);
-  textFont('JetBrains Mono, Consolas, monospace');
-  textSize(FONT_SIZE);
+  cnv.id('p5-layer');
+  textFont('Consolas, Monaco, "Courier New", monospace');
+  textSize(fontSize);
   textAlign(LEFT, TOP);
-  clear(); 
+  colorMode(HSB);
   frameRate(30);
+  clear();
+}
+
+function windowResized() {
+  computeGrid();
+  resizeCanvas(windowWidth, windowHeight);
+  clear();
+  x = 0;
+  y = 0;
+
+  hydraCanvas.width = windowWidth;
+  hydraCanvas.height = windowHeight;
+  try {
+    hydra.setResolution(windowWidth, windowHeight);
+  } catch (e) {
+    // older hydra-synth builds may not expose setResolution
+  }
 }
 
 function draw() {
-  const c = code[i % code.length];
-
-  if (x === 0 && y % 12 === 0) {
+  if (x === 0 && y === 0) {
     clear();
   }
+
+  const c = codeLower[i % codeLower.length];
 
   if (c === '\n') {
     y++;
     x = 0;
-  } else if (c === '\t') {
-    x = x - (x % 4) + 4;
   } else {
-    fill((j % 211) * (360 / 211), (j % 37) * (100 / 37), ((j % 107) * (100 / 107)) + 5, 0.7);
-    text(c, (x * CHAR_W) + 20, ((y % 25) * LINE_H) + 20);
-    x++;
-  }
+    // wrap the visible window once we fill the screen
+    if (y >= rows) {
+      clear();
+      y = 0;
+      j = 0;
+    }
 
-  if (x >= 45) {
-    x = 0;
-    y++;
+    const px = x * charW + marginX;
+    const py = y * lineH + marginY;
+    const charsPerFill = cols * rows;
+
+    const hue = (j * 6 % charsPerFill) / charsPerFill * 360;
+    const sat = 55 + 40 * (0.5 + 0.5 * Math.sin(sj * 0.7));
+    const bri = 85 + 5 * (0.5 + 0.5 * Math.sin(bj * 0.3 + 1.5));
+
+    fill(hue, sat, bri);
+    text(c, px, py);
+
+    x++;
+    if (x >= cols) {
+      x = 0;
+      y++;
+    }
+    j++;
+    sj++;
+    bj++;
   }
 
   i++;
-  j++;
-}
-
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
 }
 </script>
-
 </body>
 </html>
