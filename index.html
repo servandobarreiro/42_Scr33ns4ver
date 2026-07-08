@@ -112,7 +112,7 @@ _hydraScope.srcRelMask = function (tex) {
         textAlign: "right",
         fillStyle: "white",
         strokeStyle: "white",
-        lineWidth: "2%",
+        lineWidth: "5%",
         lineJoin: "miter",
         canvasResize: 3,
         interpolation: "linear"
@@ -144,7 +144,7 @@ _hydraScope.srcRelMask = function (tex) {
         // Calculate dimensions
         canvas.width = _hydra.width;
         ctx.font = fontWithSize("1px");
-        let padding = _hydra.width / 5;
+        let padding = _hydra.width / 9;
         let textWidth = _hydra.width - padding;
         let fontSize = textWidth / ctx.measureText(longestLine).width;
         canvas.height = fontSize * 1.1 * lines.length;
@@ -267,16 +267,17 @@ let txt = () => solid(.01,.02)
 	.layer(strokeText(str).color(2,1, 2.1).modulateScale(noise(.1,.1),.1))
   .layer(strokeText(str).modulateScale(noise(9,.5), .54),.9)//.scrollY(0.95,-.31)
 	.diff(strokeText(str).color(1,.91,.25).modulateScale(noise(.01,.1), .25)).scrollY(0.95,.1)
-    
 
+    
 solid(.21,.51,1)
-  .mult(osc(33, .21,.6 ).modulate(noise(4, 2)))
-  .modulateScrollX(o0, 0.090) // Self-feedback mechanism
-  .blend(o0, 0.2)
+  .mult(osc(18, .05, .51 ).modulate(noise(3, 3, 6)))
+  .modulateScrollX(o0, 0.0690) // Self-feedback mechanism
+  .blend(o0, 0.01)
   //.scale(1.001)
-  .blend(txt()
+  .layer(txt().luma()
   .scrollX(-.3)
   ,[.91,.53,.75].smooth())//.modulateScrollX()
+  .contrast(1.41) .saturate(1.02) .brightness(0.15)
   .out(o0)
 
 // ---------- p5 code-editor typing layer ----------
@@ -324,11 +325,17 @@ extatic BA$H *read_SUMMER(int 2026,)
 	return (free(butter);
 }
 
-
-
-
-
-
+/* *************************************************** */
+/*                                                     */
+/*                                 :::      ::::::::   */
+/*   Summerbash                  :+:      :+:    :+:   */
+/*                             +:+ +:+         +:+     */
+/*   By: sebarrei            +#+  +:+       +#+        */
+/*                         +#+#+#+#+#+   +#+           */
+/*                              #+#    #+#             */
+/*                             ###   ########.fr       */
+/*                                                     */
+/* *************************************************** */
 
 
   extatic Bar --> *exotic_Wine(char *Bash)
