@@ -261,22 +261,27 @@ _hydraScope.srcRelMask = function (tex) {
 
 speed = .66
 hydraText.font = "helvetica"
-hydraText.lineWidth = "1.5%"
+hydraText.lineWidth = "1.95%"
 str =  " SUMMER        \n BASH               \n 2026                "
-let txt = () => solid(.01,.02)
+let txt = () => solid(.1,.2)
 	.layer(strokeText(str).color(2,1, 2.1).modulateScale(noise(.1,.1),.1))
   .layer(strokeText(str).modulateScale(noise(9,.5), .54),.9)//.scrollY(0.95,-.31)
 	.diff(strokeText(str).color(1,.91,.25).modulateScale(noise(.01,.1), .25)).scrollY(0.95,.1)
 
     
 solid(.21,.51,1)
+//.add(noise(3,0.21).thresh(0.5,0.4).color(1,.5,1).pixelate(8,6).scrollX(69,-.005),.43)
   .mult(osc(18, .05, .51 ).modulate(noise(3, 3, 6)))
-  .modulateScrollX(o0, 0.0690) // Self-feedback mechanism
-  .blend(o0, 0.01)//.out(o1)
+  //.modulateScrollX(o0, 0.0690) // Self-feedback mechanism
+  //.blend(o0, 0.01)//.out(o1)
   //.scale(1.001)
-  .layer(txt().modulate(src(o0),.02).luma()
+
+  .layer(txt().modulate(src(o0),.07).luma()
   .scrollX(-.3)
-  ,[.91,.53,.75].smooth())//.modulateScrollX()
+  ,[.91,.53,.75].smooth())
+  .diff(src(o1).thresh(.95, .52).scrollY(-0.5,.31).scrollX(-.5,.1).blend(src(o1),.8).pixelate(4,4).color(.17,.02,.17),.15)
+  //.modulateScrollX()
+  .diff(noise(3,0.21).thresh(0.5,0.4).color(1,.15,1).colorama(.04,.5).pixelate(8,6).scrollX(69,-.05),.43)
   .contrast(1.41) .saturate(1.02) .brightness(0.15)
   .out(o0)
 
